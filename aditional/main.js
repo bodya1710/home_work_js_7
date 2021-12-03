@@ -117,3 +117,106 @@
  // let option = new Teg('option', 'определяет отдельные пункты списка, создаваемого с помощью контейнера', 'disabled', 'Заблокировать для доступа элемент списка', 'label', 'Указание метки пункта списка.', 'value', 'Значение пункта списка, которое будет отправлено на сервер или прочитано с помощью скриптов.');
  // let select = new Teg('select', 'позволяет создать элемент интерфейса в виде раскрывающегося списка, а также список с одним или множественным выбором, как показано далее', 'form', 'Связывает список с формой.', 'size', 'Количество отображаемых строк списка.', 'disable', 'Блокирует доступ и изменение элемента.');
  // console.log(form);
+
+
+
+ //==================
+
+
+ function getCardOptions(num) {
+
+         this.key = num;
+         this.balance = 100;
+         this.transactionLimit = 100;
+         this.historyLogs = [];
+         let date = new Date();
+         this.putCredits = function (m) {
+             this.historyLogs.push({
+                 operationType: 'Received credits',
+                 credits: m,
+                 operationTime: `${date.getDate()}/${date.getMonth()}/${date.getFullYear()}, ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`
+             })
+             return this.balance += m
+         }
+         this.takeCredits = function (m) {
+             this.historyLogs.push({
+                 operationType: 'Withdrawal of credits',
+                 credits: m,
+                 operationTime: `${date.getDate()}/${date.getMonth()}/${date.getFullYear()}, ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`
+             })
+             if (m < this.balance && m < this.transactionLimit){
+                 return this.balance -= m
+             }else{
+                 console.error('Поповніть карту або збільшіть ліміт')
+                 return false
+             }
+         }
+         this.setTransactionLimit = function (limit) {
+             this.historyLogs.push({
+                 operationType: 'Transaction limit change',
+                 credits: limit,
+                 operationTime: `${date.getDate()}/${date.getMonth()}/${date.getFullYear()}, ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`
+             })
+             if(typeof limit === 'number'){
+                 this.transactionLimit = limit
+             }else {
+                 console.error('Ведіть число')
+             }
+         }
+         this.transferCredits =function (m, card) {
+             let tax = m * 0.005;
+             let sum  = m + tax
+             if (this.takeCredits(sum)){
+                 card.balance += m
+                 this.balance -= tax
+                 card.historyLogs.push({
+                     operationType: 'Received credit',
+                     credits: m,
+                     operationTime: `${date.getDate()}/${date.getMonth()}/${date.getFullYear()}, ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`
+                 })
+             }
+         }
+
+     }
+
+class UserAccound{
+    constructor(user) {
+        this.name = user;
+        this.cards = [];
+    }
+    addCard(n){
+        if (this.cards.length >= 3){
+            alert('Увас вже є 3 карти');
+        } else {
+            this.cards.push(new getCardOptions(n));
+        }
+
+    }
+    getCardByKey(n){
+        if (!(n >+3)){
+            for (let i = 0; i < this.cards.length; i++) {
+                if (this.cards[i].key === n){
+                    return this.cards[i];
+                }
+            }
+        }
+
+    }
+}
+let user1 = new UserAccound('bob');
+user1.addCard(1);
+user1.addCard(2);
+user1.addCard(3);
+let card1 = user1.getCardByKey(1);
+let card2 = user1.getCardByKey(2);
+let card3 = user1.getCardByKey(3);
+card1.putCredits(500);
+card1.setTransactionLimit(800);
+card1.transferCredits(300, card2);
+card2.takeCredits(50);
+ console.log(card1);
+ console.log(card2);
+
+
+
+
